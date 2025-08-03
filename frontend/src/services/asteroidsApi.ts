@@ -32,4 +32,9 @@ export const asteroidsApi = {
     cache.set(cacheKey, { data: response.data, timestamp: Date.now() });
     return response.data;
   },
+
+  getAsteroidById: async (asteroidId: string) => {
+    const response = await api.get(`/nasa/asteroids/${asteroidId}`);
+    return response.data;
+  },
 };

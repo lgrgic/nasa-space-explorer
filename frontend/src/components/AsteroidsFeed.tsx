@@ -62,7 +62,9 @@ export const AsteroidsFeed = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-400 mb-4"></div>
+        </div>
       </div>
     );
   }
@@ -71,8 +73,10 @@ export const AsteroidsFeed = () => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-2xl font-bold text-red-400 mb-4 font-mono">
+            SYSTEM ERROR
+          </h2>
+          <p className="text-gray-400 font-mono">{error}</p>
         </div>
       </div>
     );
@@ -94,56 +98,57 @@ export const AsteroidsFeed = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Near Earth Asteroids
+      <h1 className="text-4xl font-bold text-center mb-8 text-white font-mono tracking-wider">
+        NEAR EARTH ASTEROIDS
       </h1>
 
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> NASA API allows a maximum date range of 7
-            days. Please select dates within this limit for best results.
+      <div className="max-w-4xl mx-auto border border-gray-700 rounded-lg p-6 mb-8 bg-black/20 backdrop-blur-sm">
+        <div className="mb-4 p-3 border border-gray-600 rounded-lg bg-black/40">
+          <p className="text-sm text-gray-300 font-mono">
+            <span className="text-blue-400">NOTE:</span> NASA API allows a
+            maximum date range of 7 days. Please select dates within this limit
+            for best results.
           </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Start Date
+            <label className="block text-sm font-medium text-gray-300 mb-2 font-mono">
+              START DATE
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black/40 text-gray-200 font-mono"
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Date
+            <label className="block text-sm font-medium text-gray-300 mb-2 font-mono">
+              END DATE
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black/40 text-gray-200 font-mono"
             />
           </div>
           <button
             onClick={handleSearch}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 transition-colors font-mono border border-gray-600"
           >
-            Search
+            SCAN
           </button>
         </div>
       </div>
 
       {data && (
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 bg-green-50 text-green-800 px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 border border-gray-600 text-gray-300 px-4 py-2 rounded-lg bg-black/20 font-mono">
             <span className="font-medium">
-              Page {currentPageNumber} of {totalPages} - {cumulativeCount} of{" "}
-              {totalAsteroids} asteroids
+              PAGE {currentPageNumber} OF {totalPages} - {cumulativeCount} OF{" "}
+              {totalAsteroids} ASTEROIDS DETECTED
             </span>
           </div>
         </div>

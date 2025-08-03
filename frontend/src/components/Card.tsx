@@ -35,16 +35,16 @@ export const Card = ({
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-gray-200 overflow-hidden h-full ${className}`}
+      className={`border border-gray-700 rounded-lg hover:border-gray-600 transition-all duration-300 overflow-hidden h-full bg-black/20 backdrop-blur-sm ${className}`}
     >
       <div className={`${compact ? "p-3" : "p-4 sm:p-5 lg:p-6"}`}>
         <div className="flex items-center justify-between mb-3 lg:mb-4">
           <div className="flex-1 mr-2">
-            <h3 className="font-bold text-base lg:text-lg text-gray-900 truncate">
+            <h3 className="font-bold text-base lg:text-lg text-gray-200 truncate font-mono">
               {title}
             </h3>
             {subtitle && (
-              <p className="text-sm text-gray-600 mt-1">{subtitle}</p>
+              <p className="text-sm text-gray-400 mt-1 font-mono">{subtitle}</p>
             )}
           </div>
           {status && (

@@ -28,20 +28,20 @@ export const AsteroidCard = ({
       className={className}
       compact={compact}
     >
-      <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-100">
-        <span className="text-gray-600 font-medium text-xs lg:text-sm">
-          Magnitude
+      <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-700">
+        <span className="text-gray-400 font-medium text-xs lg:text-sm font-mono">
+          MAGNITUDE
         </span>
-        <span className="text-gray-900 font-semibold text-xs lg:text-sm">
+        <span className="text-gray-200 font-semibold text-xs lg:text-sm font-mono">
           {asteroid.absolute_magnitude_h}
         </span>
       </div>
 
-      <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-100">
-        <span className="text-gray-600 font-medium text-xs lg:text-sm">
-          Diameter
+      <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-700">
+        <span className="text-gray-400 font-medium text-xs lg:text-sm font-mono">
+          DIAMETER
         </span>
-        <span className="text-gray-900 font-semibold text-xs lg:text-sm text-right">
+        <span className="text-gray-200 font-semibold text-xs lg:text-sm text-right font-mono">
           {asteroid.estimated_diameter.kilometers.estimated_diameter_min.toFixed(
             2
           )}{" "}
@@ -49,16 +49,16 @@ export const AsteroidCard = ({
           {asteroid.estimated_diameter.kilometers.estimated_diameter_max.toFixed(
             2
           )}{" "}
-          km
+          KM
         </span>
       </div>
 
       {asteroid.close_approach_data[0] && (
-        <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-100">
-          <span className="text-gray-600 font-medium text-xs lg:text-sm">
-            Closest Approach
+        <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-700">
+          <span className="text-gray-400 font-medium text-xs lg:text-sm font-mono">
+            CLOSEST APPROACH
           </span>
-          <span className="text-gray-900 font-semibold text-xs lg:text-sm text-right">
+          <span className="text-gray-200 font-semibold text-xs lg:text-sm text-right font-mono">
             {asteroid.close_approach_data[0].close_approach_date}
           </span>
         </div>
@@ -68,12 +68,12 @@ export const AsteroidCard = ({
         <div
           className={`${
             compact ? "mt-2 p-2" : "mt-3 lg:mt-4 p-2 lg:p-3"
-          } bg-red-50 border border-red-200 rounded-lg`}
+          } border border-red-500/30 rounded-lg bg-red-500/10`}
         >
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-            <span className="text-red-700 font-semibold text-xs lg:text-sm">
-              Potentially Hazardous
+            <span className="text-red-400 font-semibold text-xs lg:text-sm font-mono">
+              POTENTIALLY HAZARDOUS
             </span>
           </div>
         </div>

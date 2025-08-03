@@ -17,4 +17,15 @@ export const nasaService = {
     );
     return response.data;
   },
+
+  async getAsteroidById(asteroidId: string) {
+    if (!NASA_API_KEY) {
+      throw new Error("NASA API key is not configured");
+    }
+
+    const response = await axios.get(
+      `${NASA_BASE_URL}/neo/${asteroidId}?api_key=${NASA_API_KEY}`
+    );
+    return response.data;
+  },
 };

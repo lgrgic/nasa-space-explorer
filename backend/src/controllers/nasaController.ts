@@ -71,4 +71,26 @@ export const nasaController = {
       });
     }
   },
+
+  async getAsteroidById(req: Request, res: Response): Promise<void> {
+    try {
+      const { asteroid_id } = req.params;
+
+      if (!asteroid_id) {
+        res.status(400).json({
+          error: "asteroid_id is required",
+        });
+        return;
+      }
+
+      const data = await nasaService.getAsteroidById(asteroid_id);
+      res.json(data);
+    } catch (error) {
+      console.error("Asteroid lookup error:", error);
+      res.status(500).json({
+        error: "Failed to fetch asteroid data",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  },
 };
