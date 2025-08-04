@@ -55,7 +55,10 @@ export const AsteroidDetailCard = ({
       {activeTab === "overview" && <AsteroidOverview asteroid={asteroid} />}
 
       {activeTab === "approaches" && (
-        <AsteroidApproaches closeApproachData={asteroid.close_approach_data} />
+        <AsteroidApproaches
+          closeApproachData={asteroid.close_approach_data}
+          asteroidName={asteroid.name || asteroid.designation}
+        />
       )}
 
       {activeTab === "orbital" && asteroid.orbital_data && (

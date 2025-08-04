@@ -1,11 +1,14 @@
 import type { CloseApproachData } from "../types/asteroids";
+import CloseApproachTimeline from "./CloseApproachTimeline";
 
 interface AsteroidApproachesProps {
   closeApproachData: CloseApproachData[];
+  asteroidName?: string;
 }
 
 export const AsteroidApproaches = ({
   closeApproachData,
+  asteroidName = "Asteroid",
 }: AsteroidApproachesProps) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -35,12 +38,17 @@ export const AsteroidApproaches = ({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex gap-2 mb-4">
         <span className="text-xs text-gray-400 font-mono">
           Showing {closeApproachData.length} close approaches
         </span>
       </div>
+
+      <CloseApproachTimeline
+        closeApproachData={closeApproachData}
+        asteroidName={asteroidName}
+      />
 
       <div className="max-h-96 overflow-y-auto space-y-2">
         {sortedApproaches.map((approach, index) => {
