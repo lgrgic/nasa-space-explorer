@@ -1,5 +1,5 @@
 import type { Asteroid } from "../types/asteroids";
-import { Card } from "./Card";
+import { Card } from "../layout/Card";
 
 interface AsteroidCardProps {
   asteroid: Asteroid;

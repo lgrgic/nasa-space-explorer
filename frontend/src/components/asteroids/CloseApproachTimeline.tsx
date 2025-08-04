@@ -1,9 +1,9 @@
 import React from "react";
 import type { CloseApproachData } from "../types/asteroids";
-import { useYearlyData } from "./charts/useYearlyData";
-import ApproachesBarChart from "./charts/ApproachesBarChart";
-import DistanceLineChart from "./charts/DistanceLineChart";
-import SummaryStats from "./charts/SummaryStats";
+import { useYearlyData } from "../charts/useYearlyData";
+import ApproachesBarChart from "../charts/ApproachesBarChart";
+import DistanceLineChart from "../charts/DistanceLineChart";
+import SummaryStats from "../charts/SummaryStats";
 
 interface CloseApproachTimelineProps {
   closeApproachData: CloseApproachData[];

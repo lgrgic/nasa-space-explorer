@@ -1,24 +1,28 @@
 import { useState } from "react";
-import { asteroidsApi } from "../services/asteroidsApi";
+import { asteroidsApi } from "../../services/asteroidsApi";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
-import { SearchInput } from "./SearchInput";
-import type { Asteroid } from "../types/asteroids";
+import { SearchInput } from "../forms/SearchInput";
+import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
+import type { Asteroid } from "../../types/asteroids";
 
 export const AsteroidLookup = () => {
   const [asteroidId, setAsteroidId] = useState("");
   const [asteroid, setAsteroid] = useState<Asteroid | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { hasError, error, retry, handleError } = useErrorHandler({
+    onRetry: () => handleSearch(),
+  });
 
   const handleSearch = async () => {
     if (!asteroidId.trim()) {
-      setError("Please enter an asteroid ID or name");
+      handleError(new Error("Please enter an asteroid ID or name"));
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       // Convert to uppercase
       const searchTerm = asteroidId.trim();
@@ -29,9 +33,13 @@ export const AsteroidLookup = () => {
       const data = await asteroidsApi.getAsteroidById(processedSearchTerm);
       setAsteroid(data);
     } catch (err) {
-      setError(
-        "Failed to find asteroid. Please check the ID or name and try again."
-      );
+      const error =
+        err instanceof Error
+          ? err
+          : new Error(
+              "Failed to find asteroid. Please check the ID or name and try again."
+            );
+      handleError(error);
       setAsteroid(null);
     } finally {
       setLoading(false);
@@ -41,7 +49,6 @@ export const AsteroidLookup = () => {
   const handleClear = () => {
     setAsteroidId("");
     setAsteroid(null);
-    setError(null);
   };
 
   return (
@@ -86,13 +93,17 @@ export const AsteroidLookup = () => {
         </div>
       )}
 
-      {error && (
-        <div className="text-center">
-          <h3 className="text-xl font-bold text-red-400 mb-4 font-mono">
-            SEARCH ERROR
-          </h3>
-          <p className="text-gray-400 font-mono">{error}</p>
-        </div>
+      {hasError && (
+        <ApiErrorBoundary onRetry={retry}>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-red-400 mb-4 font-mono">
+              SEARCH ERROR
+            </h3>
+            <p className="text-gray-400 font-mono">
+              {error?.message || "An unexpected error occurred"}
+            </p>
+          </div>
+        </ApiErrorBoundary>
       )}
 
       {asteroid && (

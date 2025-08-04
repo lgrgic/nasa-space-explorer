@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { Asteroid } from "../types/asteroids";
-import { Card } from "./Card";
-import { TabNavigation } from "./TabNavigation";
+import { Card } from "../layout/Card";
+import { TabNavigation } from "../common/TabNavigation";
 import { AsteroidOverview } from "./AsteroidOverview";
 import { AsteroidApproaches } from "./AsteroidApproaches";
 import { AsteroidOrbitalData } from "./AsteroidOrbitalData";
-import { AIAnalysis } from "./AIAnalysis";
+import { AIAnalysis } from "../features/AIAnalysis";
 
 interface AsteroidDetailCardProps {
   asteroid: Asteroid;

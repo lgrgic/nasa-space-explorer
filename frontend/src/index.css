@@ -1,6 +1,53 @@
+@import "react-day-picker/dist/style.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Override react-day-picker default styles */
+.rdp-selected .rdp-day_button {
+  border: 2px solid #6b7280 !important;
+  background-color: #374151 !important;
+  border-radius: 6px !important;
+}
+
+.rdp-day_button:focus {
+  border: 2px solid #6b7280 !important;
+  background-color: #374151 !important;
+}
+
+.rdp-nav_button:focus {
+  border: 2px solid #6b7280 !important;
+  background-color: #374151 !important;
+}
+
+.rdp-nav_button:hover {
+  background-color: #4b5563 !important;
+}
+
+.rdp-day_button:hover {
+  background-color: #4b5563 !important;
+}
+
+.rdp-range_end {
+  background: black !important;
+}
+
+.rdp-range_start {
+  background: black !important;
+}
+
+.rdp-range_middle {
+  background: black !important;
+}
+
+.rdp-today {
+  color: red !important;
+}
+
+.rdp-chevron {
+  fill: none !important;
+}
 
 body {
   margin: 0;

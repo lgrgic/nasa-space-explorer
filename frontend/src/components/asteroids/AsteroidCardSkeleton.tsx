@@ -1,4 +1,4 @@
-import { Card } from "./Card";
+import { Card } from "../layout/Card";
 
 interface AsteroidCardSkeletonProps {
   className?: string;

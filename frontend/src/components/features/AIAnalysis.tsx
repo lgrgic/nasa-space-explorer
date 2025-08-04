@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { asteroidsApi } from "../services/asteroidsApi";
-import { Card } from "./Card";
-import { TabNavigation } from "./TabNavigation";
+import { asteroidsApi } from "../../services/asteroidsApi";
+import { Card } from "../layout/Card";
+import { TabNavigation } from "../common/TabNavigation";
 
 interface AsteroidAnalysis {
   summary: string;

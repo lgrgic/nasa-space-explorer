@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { AsteroidsFeed } from "./components/AsteroidsFeed";
-import { AsteroidLookup } from "./components/AsteroidLookup";
-import { Navigation } from "./components/Navigation";
+import { AsteroidsFeed } from "./components/asteroids/AsteroidsFeed";
+import { AsteroidLookup } from "./components/asteroids/AsteroidLookup";
+import { Navigation } from "./components/layout/Navigation";
+import { Toaster } from "./components/ui/toaster";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import "./App.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState<"feed" | "lookup">("feed");
 
   return (
-    <>
+    <ErrorBoundary>
       {/* Navigation - Full width */}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -19,7 +21,10 @@ function App() {
           {activeTab === "feed" ? <AsteroidsFeed /> : <AsteroidLookup />}
         </div>
       </div>
-    </>
+
+      {/* Toast notifications */}
+      <Toaster />
+    </ErrorBoundary>
   );
 }
 

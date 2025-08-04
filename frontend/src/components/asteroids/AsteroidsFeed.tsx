@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { asteroidsApi } from "../services/asteroidsApi";
-import type { AsteroidsResponse, Asteroid } from "../types/asteroids";
-import { DateFilterForm } from "./DateFilterForm";
+import { asteroidsApi } from "../../services/asteroidsApi";
+import type { AsteroidsResponse, Asteroid } from "../../types/asteroids";
+import { DateFilterForm } from "../forms/DateFilterForm";
 import { AsteroidsGrid } from "./AsteroidsGrid";
-import { ResultsSummary } from "./ResultsSummary";
-import { Pagination } from "./Pagination";
-import { Modal } from "./Modal";
+import { ResultsSummary } from "../common/ResultsSummary";
+import { Pagination } from "../common/Pagination";
+import { Modal } from "../layout/Modal";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
+import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
 
 export const AsteroidsFeed = () => {
   const [data, setData] = useState<AsteroidsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -27,6 +28,10 @@ export const AsteroidsFeed = () => {
   const [modalError, setModalError] = useState<string | null>(null);
   const [limit] = useState(9);
 
+  const { hasError, error, retry, handleError } = useErrorHandler({
+    onRetry: () => fetchAsteroids(startDate, endDate, currentPage),
+  });
+
   const fetchAsteroids = async (
     start: string,
     end: string,
@@ -34,11 +39,12 @@ export const AsteroidsFeed = () => {
   ) => {
     try {
       setLoading(true);
-      setError(null);
       const response = await asteroidsApi.getFeed(start, end, page, limit);
       setData(response);
     } catch (err) {
-      setError("Failed to load asteroids data");
+      const error =
+        err instanceof Error ? err : new Error("Failed to load asteroids data");
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -119,15 +125,23 @@ export const AsteroidsFeed = () => {
     );
   }
 
-  if (error) {
+  if (hasError) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-400 mb-4 font-mono">
-            SYSTEM ERROR
-          </h2>
-          <p className="text-gray-400 font-mono">{error}</p>
-        </div>
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-center mb-8 text-white font-mono tracking-wider">
+          NEAR EARTH ASTEROIDS
+        </h1>
+
+        <ApiErrorBoundary onRetry={retry}>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-400 mb-4 font-mono">
+              SYSTEM ERROR
+            </h2>
+            <p className="text-gray-400 font-mono">
+              {error?.message || "An unexpected error occurred"}
+            </p>
+          </div>
+        </ApiErrorBoundary>
       </div>
     );
   }
@@ -152,46 +166,14 @@ export const AsteroidsFeed = () => {
         NEAR EARTH ASTEROIDS
       </h1>
 
-      <div className="max-w-4xl mx-auto border border-gray-700 rounded-lg p-6 mb-8 bg-black/20 backdrop-blur-sm">
-        <div className="mb-4 p-3 border border-gray-600 rounded-lg bg-black/40">
-          <p className="text-sm text-gray-300 font-mono">
-            <span className="text-blue-400">NOTE:</span> NASA API allows a
-            maximum date range of 7 days. Please select dates within this limit
-            for best results.
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-4 items-end">
-          <div className="w-full lg:flex-1">
-            <label className="block text-sm font-medium text-gray-300 mb-2 font-mono text-center lg:text-left">
-              START DATE
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full max-w-xs mx-auto lg:mx-0 px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black/40 text-gray-200 font-mono"
-            />
-          </div>
-          <div className="w-full lg:flex-1">
-            <label className="block text-sm font-medium text-gray-300 mb-2 font-mono text-center lg:text-left">
-              END DATE
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full max-w-xs mx-auto lg:mx-0 px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black/40 text-gray-200 font-mono"
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="w-full lg:w-auto px-6 py-2 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 transition-colors font-mono border border-gray-600"
-          >
-            SCAN
-          </button>
-        </div>
-      </div>
+      <DateFilterForm
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onSearch={handleSearch}
+        loading={loading}
+      />
 
       {data && (
         <ResultsSummary
