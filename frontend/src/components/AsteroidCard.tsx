@@ -5,12 +5,14 @@ interface AsteroidCardProps {
   asteroid: Asteroid;
   className?: string;
   compact?: boolean;
+  onClick?: () => void;
 }
 
 export const AsteroidCard = ({
   asteroid,
   className = "",
   compact = false,
+  onClick,
 }: AsteroidCardProps) => {
   const status = {
     type: (asteroid.is_potentially_hazardous_asteroid ? "error" : "success") as
@@ -25,8 +27,11 @@ export const AsteroidCard = ({
     <Card
       title={asteroid.name}
       status={status}
-      className={className}
+      className={`${className} ${
+        onClick ? "cursor-pointer hover:bg-gray-800/50 transition-colors" : ""
+      }`}
       compact={compact}
+      onClick={onClick}
     >
       <div className="flex justify-between items-center py-1 lg:py-2 border-b border-gray-700">
         <span className="text-gray-400 font-medium text-xs lg:text-sm font-mono">

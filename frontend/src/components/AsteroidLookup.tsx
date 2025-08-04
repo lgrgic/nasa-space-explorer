@@ -46,7 +46,7 @@ export const AsteroidLookup = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold text-center mb-8 text-white font-mono tracking-wider">
+      <h2 className="text-3xl font-bold text-center mb-8 text-white font-mono tracking-wider">
         ASTEROID LOOKUP
       </h2>
 
@@ -79,10 +79,9 @@ export const AsteroidLookup = () => {
       </div>
 
       {loading && (
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm z-50">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-400 mb-4"></div>
-            <p className="text-gray-400 font-mono">SEARCHING ASTEROIDS...</p>
           </div>
         </div>
       )}

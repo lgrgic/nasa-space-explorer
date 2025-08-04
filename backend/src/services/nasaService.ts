@@ -1,5 +1,6 @@
 import axios from "axios";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
+import { cacheService, CACHE_KEYS } from "./cacheService";
 
 dotenv.config();
 
@@ -12,9 +13,22 @@ export const nasaService = {
       throw new Error("NASA API key is not configured");
     }
 
+    const cacheKey = cacheService.generateKey(
+      CACHE_KEYS.ASTEROID_FEED,
+      startDate,
+      endDate
+    );
+    const cachedData = cacheService.get(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     const response = await axios.get(
       `${NASA_BASE_URL}/feed?start_date=${startDate}&end_date=${endDate}&api_key=${NASA_API_KEY}`
     );
+
+    cacheService.set(cacheKey, response.data, 3600);
     return response.data;
   },
 
@@ -23,9 +37,25 @@ export const nasaService = {
       throw new Error("NASA API key is not configured");
     }
 
+    const cacheKey = cacheService.generateKey(
+      CACHE_KEYS.ASTEROID_DETAIL,
+      asteroidId
+    );
+    const cachedData = cacheService.get(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     const response = await axios.get(
       `${NASA_BASE_URL}/neo/${asteroidId}?api_key=${NASA_API_KEY}`
     );
+
+    cacheService.set(cacheKey, response.data, 86400);
     return response.data;
+  },
+
+  clearCache(): void {
+    cacheService.flush();
   },
 };

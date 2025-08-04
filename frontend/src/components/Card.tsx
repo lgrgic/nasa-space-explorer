@@ -8,6 +8,7 @@ interface CardProps {
     label: string;
   };
   compact?: boolean;
+  onClick?: () => void;
 }
 
 export const Card = ({
@@ -17,6 +18,7 @@ export const Card = ({
   className = "",
   status,
   compact = false,
+  onClick,
 }: CardProps) => {
   const getStatusColor = (type: string) => {
     switch (type) {
@@ -36,6 +38,7 @@ export const Card = ({
   return (
     <div
       className={`border border-gray-700 rounded-lg hover:border-gray-600 transition-all duration-300 overflow-hidden h-full bg-black/20 backdrop-blur-sm ${className}`}
+      onClick={onClick}
     >
       <div className={`${compact ? "p-3" : "p-4 sm:p-5 lg:p-6"}`}>
         <div className="flex items-center justify-between mb-3 lg:mb-4">

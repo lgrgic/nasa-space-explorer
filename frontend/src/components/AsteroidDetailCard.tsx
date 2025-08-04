@@ -5,6 +5,7 @@ import { TabNavigation } from "./TabNavigation";
 import { AsteroidOverview } from "./AsteroidOverview";
 import { AsteroidApproaches } from "./AsteroidApproaches";
 import { AsteroidOrbitalData } from "./AsteroidOrbitalData";
+import { AIAnalysis } from "./AIAnalysis";
 
 interface AsteroidDetailCardProps {
   asteroid: Asteroid;
@@ -16,8 +17,10 @@ export const AsteroidDetailCard = ({
   className = "",
 }: AsteroidDetailCardProps) => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "approaches" | "orbital"
+    "overview" | "approaches" | "orbital" | "ai"
   >("overview");
+
+  console.log("AsteroidDetailCard asteroid:", asteroid);
 
   const status = {
     type: (asteroid.is_potentially_hazardous_asteroid ? "error" : "success") as
@@ -36,6 +39,7 @@ export const AsteroidDetailCard = ({
       count: asteroid.close_approach_data.length,
     },
     { id: "orbital", label: "ORBITAL DATA" },
+    { id: "ai", label: "HONEST ANALYSIS" },
   ];
 
   return (
@@ -44,7 +48,7 @@ export const AsteroidDetailCard = ({
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={(tabId) =>
-          setActiveTab(tabId as "overview" | "approaches" | "orbital")
+          setActiveTab(tabId as "overview" | "approaches" | "orbital" | "ai")
         }
       />
 
@@ -56,6 +60,10 @@ export const AsteroidDetailCard = ({
 
       {activeTab === "orbital" && asteroid.orbital_data && (
         <AsteroidOrbitalData orbitalData={asteroid.orbital_data} />
+      )}
+
+      {activeTab === "ai" && (
+        <AIAnalysis asteroidId={asteroid.id} asteroidName={asteroid.name} />
       )}
 
       {asteroid.is_potentially_hazardous_asteroid && (
