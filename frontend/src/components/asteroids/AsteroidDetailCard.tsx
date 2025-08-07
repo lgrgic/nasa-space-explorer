@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Asteroid } from "../types/asteroids";
+import type { Asteroid } from "../../types/asteroids";
 import { Card } from "../layout/Card";
 import { TabNavigation } from "../common/TabNavigation";
 import { AsteroidOverview } from "./AsteroidOverview";
@@ -19,8 +19,6 @@ export const AsteroidDetailCard = ({
   const [activeTab, setActiveTab] = useState<
     "overview" | "approaches" | "orbital" | "ai"
   >("overview");
-
-  console.log("AsteroidDetailCard asteroid:", asteroid);
 
   const status = {
     type: (asteroid.is_potentially_hazardous_asteroid ? "error" : "success") as

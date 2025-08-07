@@ -24,8 +24,9 @@ export const nasaService = {
       return cachedData;
     }
 
+    // detailed=false for list view
     const response = await axios.get(
-      `${NASA_BASE_URL}/feed?start_date=${startDate}&end_date=${endDate}&api_key=${NASA_API_KEY}`
+      `${NASA_BASE_URL}/feed?start_date=${startDate}&end_date=${endDate}&detailed=false&api_key=${NASA_API_KEY}`
     );
 
     cacheService.set(cacheKey, response.data, 3600);
@@ -47,6 +48,7 @@ export const nasaService = {
       return cachedData;
     }
 
+    // complete orbital data and all close approaches for detail tabs
     const response = await axios.get(
       `${NASA_BASE_URL}/neo/${asteroidId}?api_key=${NASA_API_KEY}`
     );

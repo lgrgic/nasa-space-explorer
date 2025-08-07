@@ -39,7 +39,6 @@ export type AsteroidFeedParams = z.infer<typeof AsteroidFeedSchema>;
 export type AsteroidIdParams = z.infer<typeof AsteroidIdSchema>;
 export type AsteroidSearchParams = z.infer<typeof AsteroidSearchSchema>;
 
-// Validation middleware factory
 export const createValidationMiddleware = <T>(
   schema: z.ZodSchema<T>,
   source: "query" | "params" = "query"

@@ -1,4 +1,4 @@
-import type { Asteroid } from "../types/asteroids";
+import type { Asteroid } from "../../types/asteroids";
 import { AsteroidCard } from "./AsteroidCard";
 import { AsteroidCardSkeleton } from "./AsteroidCardSkeleton";
 
@@ -16,7 +16,7 @@ export const AsteroidsGrid = ({
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
-        {loading && asteroids.length > 0
+        {loading
           ? // Show skeletons
             Array.from({ length: 9 }).map((_, index) => (
               <AsteroidCardSkeleton key={`skeleton-${index}`} />

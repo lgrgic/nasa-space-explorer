@@ -3,8 +3,24 @@ import { nasaService } from "../services/nasaService";
 import { aiAnalysisService } from "../services/aiAnalysisService";
 import { AsteroidFeedParams } from "../middleware/validation";
 
+// set cache headers
+const setCacheHeaders = (res: Response, maxAge: number, etag: string) => {
+  res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
+  res.setHeader("ETag", etag);
+  res.setHeader("Last-Modified", new Date().toUTCString());
+  console.log(`Cache: max-age=${maxAge}, etag=${etag}`);
+};
+
+// prevent caching
+const setNoCacheHeaders = (res: Response) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+};
+
 export const nasaController = {
   async getAsteroidsFeed(req: Request, res: Response): Promise<void> {
+    console.log("🎯 getAsteroidsFeed controller called!"); // Debug log
     try {
       const { start_date, end_date, page, limit } = (req as any)
         .validatedQuery as AsteroidFeedParams;
@@ -31,6 +47,13 @@ export const nasaController = {
         },
       };
 
+      // cache headers for browser caching
+      setCacheHeaders(
+        res,
+        3600,
+        `"asteroids-feed-${start_date}-${end_date}-${page}-${limit}"`
+      );
+
       res.json(result);
     } catch (error) {
       console.error("Asteroids API error:", error);
@@ -48,6 +71,10 @@ export const nasaController = {
       };
 
       const data = await nasaService.getAsteroidById(asteroid_id);
+
+      // cache headers for browser caching
+      setCacheHeaders(res, 86400, `"asteroid-${asteroid_id}"`);
+
       res.json(data);
     } catch (error) {
       console.error("Asteroid lookup error:", error);
@@ -61,6 +88,10 @@ export const nasaController = {
   async clearCache(req: Request, res: Response): Promise<void> {
     try {
       nasaService.clearCache();
+
+      // prevent caching of response
+      setNoCacheHeaders(res);
+
       res.json({ message: "Cache cleared successfully" });
     } catch (error) {
       console.error("Cache clear error:", error);
@@ -79,6 +110,9 @@ export const nasaController = {
 
       const asteroidData = await nasaService.getAsteroidById(asteroid_id);
       const analysis = await aiAnalysisService.analyzeAsteroid(asteroidData);
+
+      // cache headers for browser caching
+      setCacheHeaders(res, 1800, `"asteroid-analysis-${asteroid_id}"`);
 
       res.json({
         asteroid: asteroidData,

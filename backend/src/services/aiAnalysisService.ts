@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
+import { z } from "zod";
 
 dotenv.config();
 
@@ -28,6 +29,17 @@ export interface AsteroidAnalysis {
   recommendations: string;
 }
 
+//response validation
+const AIResponseSchema = z.object({
+  summary: z.string(),
+  riskAssessment: z.string(),
+  interestingFacts: z.array(z.string()),
+  technicalDetails: z.string(),
+  recommendations: z.string(),
+});
+
+type AIResponse = z.infer<typeof AIResponseSchema>;
+
 export const aiAnalysisService = {
   async analyzeAsteroid(asteroidData: any): Promise<AsteroidAnalysis> {
     try {
@@ -35,7 +47,7 @@ export const aiAnalysisService = {
         throw new Error("OpenAI client not initialized");
       }
 
-      // Use only essential data to reduce token count (OpenAI token limit)
+      // OpenAI token limit
       const essentialData = {
         id: asteroidData.id,
         name: asteroidData.name,
@@ -59,49 +71,44 @@ export const aiAnalysisService = {
       };
 
       const prompt = `
-Analyze this asteroid data and provide a comprehensive, darkly humorous explanation:
+Analyze this asteroid data and provide a comprehensive, detailed, darkly humorous explanation.
 
 ASTEROID DATA:
 ${JSON.stringify(essentialData, null, 2)}
 
-Please provide your response in this exact format:
+Return your response as a JSON object with this exact structure:
 
-**Summary**
-[Write a darkly humorous summary of what this asteroid is and its significance - 
-be witty and sarcastic]
+  {
+    "summary": "Write a comprehensive, multi-paragraph summary of the asteroid and its significance. Use long, detailed sentences that flow naturally and tell a complete story. Include what makes this asteroid unique, its discovery story, historical context, and why it matters (or doesn't matter) to humanity. Write in a narrative style with dark humor throughout. Make each sentence substantial and informative. Write at least 3-4 long paragraphs with flowing, engaging prose.",
+    "riskAssessment": "Write a detailed, multi-paragraph risk assessment with dark humor about potential impact scenarios. Use long, flowing sentences that build upon each other and create a compelling narrative. Include specific details about the asteroid's threat level, what would happen if it hit Earth, historical comparisons to other impacts, and why we should or shouldn't be worried. Be thorough and informative while maintaining the dark humor throughout. Write in a conversational, engaging style. Write at least 3-4 long paragraphs with substantial content.",
+  "interestingFacts": [
+    "Write a detailed, multi-sentence fact with dark humor about this asteroid. Use long, flowing sentences
+     that tell a complete story or provide comprehensive information about one aspect of the asteroid.",
+    "Write another detailed, multi-sentence fact with dark humor about this asteroid. Use long, flowing 
+    sentences that explore a different aspect or characteristic of the asteroid in depth.", 
+    "Write a third detailed, multi-sentence fact with dark humor about this asteroid. Use long, flowing 
+    sentences that provide comprehensive information about another unique aspect of this space rock.",
+    "Write a fourth detailed, multi-sentence fact with dark humor about this asteroid. Use long, flowing 
+    sentences that explore yet another fascinating aspect of this cosmic object.",
+    "Write a fifth detailed, multi-sentence fact with dark humor about this asteroid. Use long, flowing 
+    sentences that provide the final piece of comprehensive information about this asteroid."
+  ],
+      "technicalDetails": "Write comprehensive technical details explained in layman's terms with dark humor. Use long, detailed sentences that flow naturally and create a compelling narrative. Include orbital characteristics, size comparisons, speed, composition, and other relevant scientific information. Write in a narrative style that makes complex concepts accessible while maintaining the dark humor. Make each sentence substantial and educational. Write at least 2-3 long paragraphs with substantial technical content.",
+    "recommendations": "Write detailed recommendations with dark humor about what humanity should do about this asteroid. Use long, flowing sentences that build upon each other and create a compelling narrative. Include both serious and humorous suggestions, discuss various scenarios, and provide comprehensive advice. Write at least 2-3 long paragraphs with substantial recommendations. Then add: 'If this asteroid hits us, the best last song to play before the world ends would be: [Song Name] by [Artist] - [YouTube link to the song]'"
+}
 
-**Risk Assessment**
-[Write risk assessment with dark humor - make jokes about the end of the world
- but keep it informative]
-
-**Interesting Facts**
-- [Fact 1 with dark humor]
-- [Fact 2 with dark humor]
-- [Fact 3 with dark humor]
-- [Fact 4 with dark humor]
-- [Fact 5 with dark humor]
-
-**Technical Details**
-[Write technical details explained in layman's terms with dark humor]
-
-**Recommendations**
-[Write recommendations with dark humor, then add: "If this asteroid hits us,
-the best last song to play before the world ends would be: [Song Name] by [Artist] 
-- [YouTube link to the song]"
-
-IMPORTANT: Be creative and diverse with song choices! Don't always pick obvious 
-"end of the world" songs like "It's The End Of The World As We Know It" by R.E.M. 
-Consider different genres, moods, and themes. Pick songs that are:
-- Unexpected but fitting (like "Bohemian Rhapsody" for dramatic irony)
-- Genre-diverse (rock, pop, classical, electronic, etc.)
-- Thematically interesting (songs about space, time, life, death, but not obvious
- apocalypse songs)
-- Sometimes humorous or ironic choices
-- Occasionally peaceful or beautiful songs for contrast
-- Mix of old and new songs across different decades
-
-Make it engaging, educational, darkly humorous, and easy to understand for
-non-scientists. Use sarcasm and wit throughout.
+IMPORTANT: 
+- Return ONLY valid JSON, no additional text or markdown
+- Be creative and diverse with song choices! Don't always pick obvious "end of the world" songs
+- Consider different genres, moods, and themes
+- Use dark humor throughout but keep it educational and accurate
+- Make it engaging for non-scientists
+- Be witty and sarcastic in your explanations
+- Write LONG, DETAILED sentences and paragraphs
+- Use narrative, flowing writing style
+- Make each sentence substantial and informative
+- Write in a conversational, engaging tone
+- Use multi-paragraph responses where appropriate
 `;
 
       const completion = await openai.chat.completions.create({
@@ -112,14 +119,15 @@ non-scientists. Use sarcasm and wit throughout.
             content: `You are an expert astronomer with a dark sense of humor. 
               Explain complex asteroid data in simple, engaging terms with witty 
               sarcasm and dark humor. Be accurate, educational, and entertaining. 
-              Use dark comedy to make space science more engaging.`,
+              Provide detailed, comprehensive responses that are engaging and informative.
+              Always respond with valid JSON only.`,
           },
           {
             role: "user",
             content: prompt,
           },
         ],
-        max_tokens: 1000,
+        max_tokens: 6000,
         temperature: 0.8,
       });
 
@@ -133,96 +141,31 @@ non-scientists. Use sarcasm and wit throughout.
   },
 
   parseAIResponse(response: string): AsteroidAnalysis {
-    // Handle the case where AI response might not be properly formatted
-    if (!response || response.trim() === "") {
+    try {
+      const parsed = JSON.parse(response);
+
+      const validated = AIResponseSchema.parse(parsed);
+
       return {
-        summary: "Analysis unavailable",
-        riskAssessment: "Risk assessment unavailable",
-        interestingFacts: [],
-        technicalDetails: "Technical details unavailable",
-        recommendations: "No specific recommendations",
+        summary: validated.summary,
+        riskAssessment: validated.riskAssessment,
+        interestingFacts: validated.interestingFacts,
+        technicalDetails: validated.technicalDetails,
+        recommendations: validated.recommendations,
       };
+    } catch (error) {
+      console.error("AI response parsing failed:", error);
+      return this.getDefaultAnalysis();
     }
+  },
 
-    // Try to extract sections from the response
-    const lines = response.split("\n");
-    let currentSection = "";
-    let sections: string[] = [];
-
-    for (const line of lines) {
-      if (line.includes("**Summary**") || line.includes("Summary:")) {
-        currentSection = "summary";
-        sections[0] = line
-          .replace("**Summary**", "")
-          .replace("Summary:", "")
-          .trim();
-      } else if (
-        line.includes("**Risk Assessment**") ||
-        line.includes("Risk Assessment:")
-      ) {
-        currentSection = "risk";
-        sections[1] = line
-          .replace("**Risk Assessment**", "")
-          .replace("Risk Assessment:", "")
-          .trim();
-      } else if (
-        line.includes("**Interesting Facts**") ||
-        line.includes("Interesting Facts:")
-      ) {
-        currentSection = "facts";
-        sections[2] = "";
-      } else if (
-        line.includes("**Technical Details**") ||
-        line.includes("Technical Details:")
-      ) {
-        currentSection = "technical";
-        sections[3] = line
-          .replace("**Technical Details**", "")
-          .replace("Technical Details:", "")
-          .trim();
-      } else if (
-        line.includes("**Recommendations**") ||
-        line.includes("Recommendations:")
-      ) {
-        currentSection = "recommendations";
-        sections[4] = line
-          .replace("**Recommendations**", "")
-          .replace("Recommendations:", "")
-          .trim();
-      } else if (line.trim() && currentSection === "facts") {
-        sections[2] = sections[2]
-          ? sections[2] + "\n" + line.trim()
-          : line.trim();
-      } else if (line.trim() && currentSection) {
-        const sectionIndex =
-          currentSection === "summary"
-            ? 0
-            : currentSection === "risk"
-            ? 1
-            : currentSection === "technical"
-            ? 3
-            : currentSection === "recommendations"
-            ? 4
-            : -1;
-        if (sectionIndex >= 0) {
-          sections[sectionIndex] = sections[sectionIndex]
-            ? sections[sectionIndex] + " " + line.trim()
-            : line.trim();
-        }
-      }
-    }
-
-    // Split facts into array
-    const facts = sections[2]
-      ? sections[2].split("\n").filter((fact) => fact.trim())
-      : [];
-
+  getDefaultAnalysis(): AsteroidAnalysis {
     return {
-      summary: sections[0] || "Analysis unavailable",
-      riskAssessment: sections[1] || "Risk assessment unavailable",
-      interestingFacts: facts,
-      technicalDetails: sections[3] || "Technical details unavailable",
-      recommendations: sections[4] || "No specific recommendations",
+      summary: "AI analysis temporarily unavailable",
+      riskAssessment: "Risk assessment unavailable",
+      interestingFacts: [],
+      technicalDetails: "Technical details unavailable",
+      recommendations: "No specific recommendations",
     };
   },
 };

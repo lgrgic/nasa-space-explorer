@@ -5,7 +5,7 @@ import { DateFilterForm } from "../forms/DateFilterForm";
 import { AsteroidsGrid } from "./AsteroidsGrid";
 import { ResultsSummary } from "../common/ResultsSummary";
 import { Pagination } from "../common/Pagination";
-import { Modal } from "../layout/Modal";
+import { CenteredDialog } from "../layout/CenteredDialog";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
 import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
@@ -17,7 +17,7 @@ export const AsteroidsFeed = () => {
     new Date().toISOString().split("T")[0]
   );
   const [endDate, setEndDate] = useState(
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0]
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAsteroid, setSelectedAsteroid] = useState<Asteroid | null>(
@@ -175,23 +175,74 @@ export const AsteroidsFeed = () => {
         loading={loading}
       />
 
-      {data && (
-        <ResultsSummary
-          currentPageNumber={currentPageNumber}
-          totalPages={totalPages}
-          cumulativeCount={cumulativeCount}
-          totalAsteroids={totalAsteroids}
+      {loading ? (
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 border border-gray-600 text-gray-300 px-4 py-2 rounded-lg bg-black/20 font-mono">
+            <div className="h-4 bg-gray-700/50 rounded animate-pulse w-48"></div>
+          </div>
+        </div>
+      ) : (
+        data &&
+        allAsteroids.length > 0 && (
+          <ResultsSummary
+            currentPageNumber={currentPageNumber}
+            totalPages={totalPages}
+            cumulativeCount={cumulativeCount}
+            totalAsteroids={totalAsteroids}
+          />
+        )
+      )}
+
+      {allAsteroids.length === 0 && !loading && data ? (
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-700/50 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2 font-mono">
+                NO ASTEROIDS FOUND
+              </h3>
+              <p className="text-gray-400 font-mono text-sm">
+                No near-Earth asteroids were detected for the selected date
+                range.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500 font-mono">
+                Try selecting a different date range or check back later for new
+                data.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <AsteroidsGrid
+          asteroids={allAsteroids}
+          loading={loading}
+          onAsteroidClick={handleAsteroidClick}
         />
       )}
 
-      <AsteroidsGrid
-        asteroids={allAsteroids}
-        loading={loading}
-        onAsteroidClick={handleAsteroidClick}
-      />
-
-      {/* Modal for asteroid details */}
-      <Modal
+      <CenteredDialog
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         title="ASTEROID DETAILS"
@@ -230,7 +281,7 @@ export const AsteroidsFeed = () => {
         {selectedAsteroid && !modalLoading && !modalError && (
           <AsteroidDetailCard asteroid={selectedAsteroid} />
         )}
-      </Modal>
+      </CenteredDialog>
 
       {data?.pagination && (
         <Pagination

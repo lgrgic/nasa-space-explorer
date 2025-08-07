@@ -1,4 +1,4 @@
-import type { CloseApproachData } from "../types/asteroids";
+import type { CloseApproachData } from "../../types/asteroids";
 import CloseApproachTimeline from "./CloseApproachTimeline";
 
 interface AsteroidApproachesProps {
@@ -38,7 +38,7 @@ export const AsteroidApproaches = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="flex gap-2 mb-4">
         <span className="text-xs text-gray-400 font-mono">
           Showing {closeApproachData.length} close approaches
@@ -50,7 +50,7 @@ export const AsteroidApproaches = ({
         asteroidName={asteroidName}
       />
 
-      <div className="max-h-96 overflow-y-auto space-y-2">
+      <div className="space-y-2 w-full">
         {sortedApproaches.map((approach, index) => {
           const isFuture = new Date(approach.close_approach_date) > new Date();
           const isEarth = approach.orbiting_body === "Earth";
@@ -58,7 +58,7 @@ export const AsteroidApproaches = ({
           return (
             <div
               key={index}
-              className={`p-3 rounded-lg border ${
+              className={`p-3 rounded-lg border w-full ${
                 isFuture
                   ? "border-blue-500/30 bg-blue-500/10"
                   : "border-gray-600/30 bg-gray-600/10"

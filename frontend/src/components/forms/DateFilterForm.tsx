@@ -47,7 +47,14 @@ export const DateFilterForm = ({
     if (!date) return;
 
     if (!isRangeMode) {
-      // Single day mode
+      if (startDateObj && date.getTime() === startDateObj.getTime()) {
+        setStartDateObj(undefined);
+        setEndDateObj(undefined);
+        onStartDateChange("");
+        onEndDateChange("");
+        return;
+      }
+
       setStartDateObj(date);
       setEndDateObj(date);
       onStartDateChange(formatDateToLocalString(date));
@@ -55,19 +62,18 @@ export const DateFilterForm = ({
     } else {
       // Range mode
       if (!startDateObj || (startDateObj && endDateObj)) {
-        // First selection or reset
         setStartDateObj(date);
         setEndDateObj(undefined);
         onStartDateChange(formatDateToLocalString(date));
         onEndDateChange("");
       } else {
-        // Second selection - check 7-day limit
+        // check 7-day limit
         const daysDiff = Math.ceil(
           (date.getTime() - startDateObj!.getTime()) / (1000 * 60 * 60 * 24)
         );
 
         if (daysDiff > 6) {
-          // If more than 6 days difference (7 days total), limit to 6 days from start date
+          // limit to 6 days from start date
           const maxEndDate = new Date(
             startDateObj!.getTime() + 6 * 24 * 60 * 60 * 1000
           );
@@ -95,7 +101,13 @@ export const DateFilterForm = ({
   };
 
   const handleRangeChange = (range: DateRange | undefined) => {
-    if (!range) return;
+    if (!range) {
+      setStartDateObj(undefined);
+      setEndDateObj(undefined);
+      onStartDateChange("");
+      onEndDateChange("");
+      return;
+    }
 
     setStartDateObj(range.from);
     setEndDateObj(range.to);
@@ -142,6 +154,20 @@ export const DateFilterForm = ({
     return `${format(startDateObj, "PPP")} - ${format(endDateObj, "PPP")}`;
   };
 
+  const getPlaceholderText = () => {
+    if (!isRangeMode) {
+      return "Select a single day";
+    }
+    return "Select start date, then end date";
+  };
+
+  const handleClearDates = () => {
+    setStartDateObj(undefined);
+    setEndDateObj(undefined);
+    onStartDateChange("");
+    onEndDateChange("");
+  };
+
   const getSelectedDates = () => {
     if (!isRangeMode) {
       return startDateObj ? [startDateObj] : [];
@@ -170,11 +196,11 @@ export const DateFilterForm = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full max-w-md mx-auto lg:mx-0 justify-start text-left font-mono"
+                className="w-full max-w-md mx-auto lg:mx-0 justify-start text-left font-mono min-h-[40px]"
                 disabled={loading}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {getDisplayText()}
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{getDisplayText()}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -206,9 +232,7 @@ export const DateFilterForm = ({
                   </Button>
                 </div>
                 <p className="text-xs text-gray-400 font-mono">
-                  {isRangeMode
-                    ? "Select start date, then end date"
-                    : "Select a single day"}
+                  {getPlaceholderText()}
                 </p>
               </div>
               {isRangeMode ? (
@@ -229,13 +253,30 @@ export const DateFilterForm = ({
             </PopoverContent>
           </Popover>
         </div>
-        <button
-          onClick={onSearch}
-          disabled={loading}
-          className="w-full lg:w-auto px-6 py-2 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 transition-colors font-mono border border-gray-600 disabled:bg-gray-900 disabled:text-gray-500"
-        >
-          {loading ? "SCANNING..." : "SCAN"}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+          <button
+            onClick={onSearch}
+            disabled={loading || (!startDateObj && !endDateObj)}
+            className={`px-6 py-2 rounded-lg transition-colors font-mono border ${
+              loading || (!startDateObj && !endDateObj)
+                ? "bg-gray-900 text-gray-500 border-gray-600 cursor-not-allowed"
+                : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
+            }`}
+          >
+            {loading ? "SCANNING..." : "SCAN"}
+          </button>
+          <button
+            onClick={handleClearDates}
+            disabled={loading || (!startDateObj && !endDateObj)}
+            className={`px-6 py-2 rounded-lg transition-colors font-mono border ${
+              startDateObj || endDateObj
+                ? "bg-red-800/50 text-red-200 hover:bg-red-700/50 border-red-600/50"
+                : "bg-gray-800/30 text-gray-500 border-gray-600/30 cursor-not-allowed"
+            }`}
+          >
+            CLEAR
+          </button>
+        </div>
       </div>
     </div>
   );

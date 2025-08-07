@@ -24,7 +24,6 @@ export const AsteroidLookup = () => {
     try {
       setLoading(true);
 
-      // Convert to uppercase
       const searchTerm = asteroidId.trim();
       const processedSearchTerm = /[a-zA-Z]/.test(searchTerm)
         ? searchTerm.toUpperCase()
@@ -77,8 +76,12 @@ export const AsteroidLookup = () => {
           />
           <button
             onClick={handleSearch}
-            disabled={loading}
-            className="px-6 py-2 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 disabled:bg-gray-900 disabled:text-gray-500 transition-colors font-mono border border-gray-600"
+            disabled={loading || !asteroidId.trim()}
+            className={`px-6 py-2 rounded-lg transition-colors font-mono border ${
+              loading || !asteroidId.trim()
+                ? "bg-gray-900 text-gray-500 border-gray-600 cursor-not-allowed"
+                : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
+            }`}
           >
             {loading ? "SEARCHING..." : "SEARCH"}
           </button>

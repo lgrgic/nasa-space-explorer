@@ -40,14 +40,12 @@ export const asteroidsApi = {
 
   analyzeAsteroid: async (asteroidId: string) => {
     try {
-      // Use a longer timeout for AI analysi
       const response = await axios.get(
         `${API_BASE_URL}/nasa/asteroids/${asteroidId}/analyze`,
         {
           timeout: 60000,
         }
       );
-      console.log("API Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("API Error:", error);
