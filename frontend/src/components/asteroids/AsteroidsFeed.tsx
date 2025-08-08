@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { asteroidsApi } from "../../services/asteroidsApi";
 import type { AsteroidsResponse, Asteroid } from "../../types/asteroids";
 import { DateFilterForm } from "../forms/DateFilterForm";
+import {
+  AsteroidFilters,
+  type AsteroidFilters as AsteroidFiltersType,
+} from "../forms/AsteroidFilters";
 import { AsteroidsGrid } from "./AsteroidsGrid";
 import { ResultsSummary } from "../common/ResultsSummary";
 import { Pagination } from "../common/Pagination";
@@ -9,16 +13,21 @@ import { CenteredDialog } from "../layout/CenteredDialog";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
 import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
+// filters are applied on the server before pagination
 
 export const AsteroidsFeed = () => {
   const [data, setData] = useState<AsteroidsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
-  const [endDate, setEndDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const getTodayLocalString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const [startDate, setStartDate] = useState(getTodayLocalString());
+  const [endDate, setEndDate] = useState(getTodayLocalString());
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAsteroid, setSelectedAsteroid] = useState<Asteroid | null>(
     null
@@ -27,6 +36,18 @@ export const AsteroidsFeed = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [limit] = useState(9);
+  const [uiFilters, setUiFilters] = useState<AsteroidFiltersType>({
+    hazard: "all",
+    distance: "all",
+    size: "all",
+    velocity: "all",
+  });
+  const [appliedFilters, setAppliedFilters] = useState<AsteroidFiltersType>({
+    hazard: "all",
+    distance: "all",
+    size: "all",
+    velocity: "all",
+  });
 
   const { hasError, error, retry, handleError } = useErrorHandler({
     onRetry: () => fetchAsteroids(startDate, endDate, currentPage),
@@ -35,11 +56,18 @@ export const AsteroidsFeed = () => {
   const fetchAsteroids = async (
     start: string,
     end: string,
-    page: number = 1
+    page: number = 1,
+    filtersOverride?: AsteroidFiltersType
   ) => {
     try {
       setLoading(true);
-      const response = await asteroidsApi.getFeed(start, end, page, limit);
+      const response = await asteroidsApi.getFeed(
+        start,
+        end,
+        page,
+        limit,
+        filtersOverride ?? appliedFilters
+      );
       setData(response);
     } catch (err) {
       const error =
@@ -72,7 +100,6 @@ export const AsteroidsFeed = () => {
   };
 
   const handleAsteroidClick = async (asteroid: Asteroid) => {
-    // Open modal immediately
     setSelectedAsteroid(asteroid);
     setIsModalOpen(true);
     setModalError(null);
@@ -98,6 +125,12 @@ export const AsteroidsFeed = () => {
   useEffect(() => {
     fetchAsteroids(startDate, endDate, 1);
   }, []);
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+    setAppliedFilters(uiFilters);
+    fetchAsteroids(startDate, endDate, 1, uiFilters);
+  };
 
   // Show skeleton
   if (loading && !data) {
@@ -175,6 +208,26 @@ export const AsteroidsFeed = () => {
         loading={loading}
       />
 
+      <AsteroidFilters
+        filters={uiFilters}
+        onFiltersChange={setUiFilters}
+        disabled={loading}
+      />
+
+      <div className="flex justify-end max-w-4xl mx-auto -mt-6 mb-6">
+        <button
+          onClick={handleApplyFilters}
+          disabled={loading}
+          className={`px-6 py-2 rounded-lg transition-colors font-mono border ${
+            loading
+              ? "bg-gray-900 text-gray-500 border-gray-600 cursor-not-allowed"
+              : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
+          }`}
+        >
+          APPLY FILTERS
+        </button>
+      </div>
+
       {loading ? (
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 border border-gray-600 text-gray-300 px-4 py-2 rounded-lg bg-black/20 font-mono">
@@ -189,6 +242,7 @@ export const AsteroidsFeed = () => {
             totalPages={totalPages}
             cumulativeCount={cumulativeCount}
             totalAsteroids={totalAsteroids}
+            totalCount={allAsteroids.length}
           />
         )
       )}
@@ -214,7 +268,7 @@ export const AsteroidsFeed = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9 12l2 2 4-4"
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </div>
@@ -223,13 +277,12 @@ export const AsteroidsFeed = () => {
               </h3>
               <p className="text-gray-400 font-mono text-sm">
                 No near-Earth asteroids were detected for the selected date
-                range.
+                range and filters.
               </p>
             </div>
             <div className="space-y-3">
               <p className="text-xs text-gray-500 font-mono">
-                Try selecting a different date range or check back later for new
-                data.
+                Try adjusting your date range or filter criteria.
               </p>
             </div>
           </div>
@@ -283,7 +336,7 @@ export const AsteroidsFeed = () => {
         )}
       </CenteredDialog>
 
-      {data?.pagination && (
+      {data?.pagination && (data.pagination.totalAsteroids ?? 0) > 0 && (
         <Pagination
           currentPage={data.pagination.currentPage}
           totalPages={data.pagination.totalPages}

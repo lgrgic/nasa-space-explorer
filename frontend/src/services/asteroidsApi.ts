@@ -16,18 +16,38 @@ export const asteroidsApi = {
     startDate: string,
     endDate: string,
     page: number = 1,
-    limit: number = 9
+    limit: number = 9,
+    filters?: {
+      hazard?: "all" | "hazardous" | "safe";
+      distance?: "all" | "close" | "medium" | "far";
+      size?: "all" | "small" | "medium" | "large";
+      velocity?: "all" | "slow" | "medium" | "fast";
+    }
   ): Promise<AsteroidsResponse> => {
-    const cacheKey = `${startDate}-${endDate}-${page}-${limit}`;
+    const hazard = filters?.hazard ?? "all";
+    const distance = filters?.distance ?? "all";
+    const size = filters?.size ?? "all";
+    const velocity = filters?.velocity ?? "all";
+
+    const cacheKey = `${startDate}-${endDate}-${page}-${limit}-${hazard}-${distance}-${size}-${velocity}`;
     const cached = cache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       return cached.data;
     }
 
-    const response = await api.get(
-      `/nasa/asteroids/feed?start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}`
-    );
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate,
+      page: String(page),
+      limit: String(limit),
+    });
+    if (hazard !== "all") params.set("hazard", hazard);
+    if (distance !== "all") params.set("distance", distance);
+    if (size !== "all") params.set("size", size);
+    if (velocity !== "all") params.set("velocity", velocity);
+
+    const response = await api.get(`/nasa/asteroids/feed?${params.toString()}`);
 
     cache.set(cacheKey, { data: response.data, timestamp: Date.now() });
     return response.data;

@@ -20,19 +20,72 @@ const setNoCacheHeaders = (res: Response) => {
 
 export const nasaController = {
   async getAsteroidsFeed(req: Request, res: Response): Promise<void> {
-    console.log("🎯 getAsteroidsFeed controller called!"); // Debug log
+    console.log("getAsteroidsFeed controller");
     try {
-      const { start_date, end_date, page, limit } = (req as any)
-        .validatedQuery as AsteroidFeedParams;
+      const {
+        start_date,
+        end_date,
+        page,
+        limit,
+        hazard,
+        distance,
+        size,
+        velocity,
+      } = (req as any).validatedQuery as AsteroidFeedParams & {
+        hazard?: "all" | "hazardous" | "safe";
+        distance?: "all" | "close" | "medium" | "far";
+        size?: "all" | "small" | "medium" | "large";
+        velocity?: "all" | "slow" | "medium" | "fast";
+      };
 
       const data = await nasaService.getAsteroidsFeed(start_date, end_date);
 
-      const allAsteroids = Object.values(data.near_earth_objects).flat();
-      const totalAsteroids = allAsteroids.length;
+      const allAsteroids: any[] = Object.values(data.near_earth_objects).flat();
+
+      const filtered = allAsteroids.filter((a: any) => {
+        const approach = a.close_approach_data?.[0];
+        if (!approach) return false;
+
+        // hazard
+        if (hazard === "hazardous" && !a.is_potentially_hazardous_asteroid)
+          return false;
+        if (hazard === "safe" && a.is_potentially_hazardous_asteroid)
+          return false;
+
+        // distance (lunar)
+        if (distance && distance !== "all") {
+          const lunar = parseFloat(approach.miss_distance.lunar);
+          if (distance === "close" && !(lunar < 1)) return false;
+          if (distance === "medium" && !(lunar >= 1 && lunar <= 5))
+            return false;
+          if (distance === "far" && !(lunar > 5)) return false;
+        }
+
+        // size (km max diameter)
+        if (size && size !== "all") {
+          const km = a.estimated_diameter.kilometers.estimated_diameter_max;
+          if (size === "small" && !(km < 0.1)) return false;
+          if (size === "medium" && !(km >= 0.1 && km <= 1)) return false;
+          if (size === "large" && !(km > 1)) return false;
+        }
+
+        // velocity (km/s)
+        if (velocity && velocity !== "all") {
+          const v = parseFloat(
+            approach.relative_velocity.kilometers_per_second
+          );
+          if (velocity === "slow" && !(v < 10)) return false;
+          if (velocity === "medium" && !(v >= 10 && v <= 20)) return false;
+          if (velocity === "fast" && !(v > 20)) return false;
+        }
+
+        return true;
+      });
+      const totalAsteroids = filtered.length;
       const totalPages = Math.ceil(totalAsteroids / limit);
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
-      const paginatedAsteroids = allAsteroids.slice(startIndex, endIndex);
+      const paginatedAsteroids = filtered.slice(startIndex, endIndex);
 
       const result = {
         ...data,
@@ -51,7 +104,9 @@ export const nasaController = {
       setCacheHeaders(
         res,
         3600,
-        `"asteroids-feed-${start_date}-${end_date}-${page}-${limit}"`
+        `"asteroids-feed-${start_date}-${end_date}-${page}-${limit}-${
+          hazard ?? "all"
+        }-${distance ?? "all"}-${size ?? "all"}-${velocity ?? "all"}"`
       );
 
       res.json(result);

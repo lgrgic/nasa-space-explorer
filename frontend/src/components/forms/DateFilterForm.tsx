@@ -162,10 +162,12 @@ export const DateFilterForm = ({
   };
 
   const handleClearDates = () => {
-    setStartDateObj(undefined);
-    setEndDateObj(undefined);
-    onStartDateChange("");
-    onEndDateChange("");
+    const today = new Date();
+    const todayStr = formatDateToLocalString(today);
+    setStartDateObj(today);
+    setEndDateObj(today);
+    onStartDateChange(todayStr);
+    onEndDateChange(todayStr);
   };
 
   const getSelectedDates = () => {
@@ -267,12 +269,8 @@ export const DateFilterForm = ({
           </button>
           <button
             onClick={handleClearDates}
-            disabled={loading || (!startDateObj && !endDateObj)}
-            className={`px-6 py-2 rounded-lg transition-colors font-mono border ${
-              startDateObj || endDateObj
-                ? "bg-red-800/50 text-red-200 hover:bg-red-700/50 border-red-600/50"
-                : "bg-gray-800/30 text-gray-500 border-gray-600/30 cursor-not-allowed"
-            }`}
+            disabled={loading}
+            className={`px-6 py-2 rounded-lg transition-colors font-mono border ${"bg-red-800/50 text-red-200 hover:bg-red-700/50 border-red-600/50"}`}
           >
             CLEAR
           </button>

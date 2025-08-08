@@ -9,6 +9,16 @@ export const AsteroidFeedSchema = z
     end_date: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    hazard: z.enum(["all", "hazardous", "safe"]).default("all").optional(),
+    distance: z
+      .enum(["all", "close", "medium", "far"])
+      .default("all")
+      .optional(),
+    size: z.enum(["all", "small", "medium", "large"]).default("all").optional(),
+    velocity: z
+      .enum(["all", "slow", "medium", "fast"])
+      .default("all")
+      .optional(),
     page: z.coerce.number().min(1).default(1),
     limit: z.coerce.number().min(1).max(100).default(9),
   })
