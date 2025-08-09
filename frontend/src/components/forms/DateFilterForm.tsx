@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
@@ -168,15 +168,6 @@ export const DateFilterForm = ({
     setEndDateObj(today);
     onStartDateChange(todayStr);
     onEndDateChange(todayStr);
-  };
-
-  const getSelectedDates = () => {
-    if (!isRangeMode) {
-      return startDateObj ? [startDateObj] : [];
-    }
-    if (!startDateObj) return [];
-    if (!endDateObj) return [startDateObj];
-    return [startDateObj, endDateObj];
   };
 
   return (

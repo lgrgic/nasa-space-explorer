@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { initEarthScene } from "../utils/three";
 import { isWebGLAvailable } from "../utils/three/webglDetection";
@@ -12,7 +12,6 @@ export const Landing = () => {
   const cleanupRef = useRef<(() => void) | null>(null);
   const [webGLSupported, setWebGLSupported] = useState<boolean | null>(null);
 
-  // Determine active view based on current route
   const getActiveView = () => {
     if (location.pathname === "/asteroids") return "asteroids";
     if (location.pathname === "/lookup") return "lookup";

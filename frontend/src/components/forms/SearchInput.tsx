@@ -7,8 +7,8 @@ interface SearchInputProps {
   onClear: () => void;
   placeholder?: string;
   label?: string;
-  loading?: boolean;
   className?: string;
+  loading?: boolean;
 }
 
 export const SearchInput = ({
@@ -18,7 +18,6 @@ export const SearchInput = ({
   onClear,
   placeholder = "Search...",
   label = "SEARCH",
-  loading = false,
   className = "",
 }: SearchInputProps) => {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);

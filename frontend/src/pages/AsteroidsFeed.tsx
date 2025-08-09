@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AsteroidsFeed } from "../components/asteroids/AsteroidsFeed";
 import { Navigation } from "../components/layout/Navigation";

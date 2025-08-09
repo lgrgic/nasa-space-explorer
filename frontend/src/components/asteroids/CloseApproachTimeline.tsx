@@ -7,12 +7,11 @@ import SummaryStats from "../charts/SummaryStats";
 
 interface CloseApproachTimelineProps {
   closeApproachData: CloseApproachData[];
-  asteroidName: string;
+  asteroidName?: string;
 }
 
 const CloseApproachTimeline: React.FC<CloseApproachTimelineProps> = ({
   closeApproachData,
-  asteroidName,
 }) => {
   const yearlyData = useYearlyData(closeApproachData);
 

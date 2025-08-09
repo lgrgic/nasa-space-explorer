@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { asteroidsApi } from "../../services/asteroidsApi";
 import type { AsteroidsResponse, Asteroid } from "../../types/asteroids";
@@ -13,7 +13,6 @@ import { Pagination } from "../common/Pagination";
 import { CenteredDialog } from "../layout/CenteredDialog";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
 import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
-// filters are applied on the server before pagination
 
 export const AsteroidsFeed = () => {
   const getTodayLocalString = (): string => {
@@ -68,9 +67,10 @@ export const AsteroidsFeed = () => {
   const {
     data,
     isLoading: loading,
+    isFetching,
     isError,
     error: queryError,
-  } = useQuery({
+  } = useQuery<AsteroidsResponse>({
     queryKey,
     queryFn: () =>
       asteroidsApi.getFeed(
@@ -80,11 +80,12 @@ export const AsteroidsFeed = () => {
         fetchParams.limit,
         fetchParams.filters
       ),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const handleSearch = () => {
     setCurrentPage(1);
+    setShowSkeleton(true);
     setFetchParams({
       startDate,
       endDate,
@@ -138,6 +139,7 @@ export const AsteroidsFeed = () => {
   const handleApplyFilters = () => {
     setCurrentPage(1);
     setAppliedFilters(uiFilters);
+    setShowSkeleton(true);
     setFetchParams({
       startDate,
       endDate,
@@ -146,6 +148,13 @@ export const AsteroidsFeed = () => {
       filters: uiFilters,
     });
   };
+
+  const [showSkeleton, setShowSkeleton] = useState(false);
+  useEffect(() => {
+    if (!isFetching && showSkeleton) {
+      setShowSkeleton(false);
+    }
+  }, [isFetching, showSkeleton]);
 
   if (isError) {
     return (
@@ -268,11 +277,11 @@ export const AsteroidsFeed = () => {
           </div>
         </div>
       ) : (
-        //fix flickering issue && !data
+        // shows skeleton only during user-triggered fetches
         <div className="mt-4">
           <AsteroidsGrid
             asteroids={allAsteroids}
-            loading={loading && !data}
+            loading={isFetching && showSkeleton}
             onAsteroidClick={handleAsteroidClick}
           />
         </div>

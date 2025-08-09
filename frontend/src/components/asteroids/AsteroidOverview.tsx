@@ -1,4 +1,4 @@
-import type { Asteroid } from "../types/asteroids";
+import type { Asteroid } from "../../types/asteroids";
 
 interface AsteroidOverviewProps {
   asteroid: Asteroid;

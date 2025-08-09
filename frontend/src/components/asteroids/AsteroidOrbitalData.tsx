@@ -1,4 +1,4 @@
-import type { OrbitalData } from "../types/asteroids";
+import type { OrbitalData } from "../../types/asteroids";
 
 interface AsteroidOrbitalDataProps {
   orbitalData: OrbitalData;

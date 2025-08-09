@@ -82,10 +82,7 @@ const RecommendationsSkeleton = () => (
   </Card>
 );
 
-export const AIAnalysis: React.FC<AIAnalysisProps> = ({
-  asteroidId,
-  asteroidName,
-}) => {
+export const AIAnalysis: React.FC<AIAnalysisProps> = ({ asteroidId }) => {
   const [analysis, setAnalysis] = useState<AsteroidAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

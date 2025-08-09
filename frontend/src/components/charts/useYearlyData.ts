@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import type { CloseApproachData } from "../../types/asteroids";
-import type { YearlyData } from "./types";
 
 export const useYearlyData = (closeApproachData: CloseApproachData[]) => {
   return useMemo(() => {

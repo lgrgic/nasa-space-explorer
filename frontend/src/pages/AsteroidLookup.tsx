@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AsteroidLookup } from "../components/asteroids/AsteroidLookup";
 import { Navigation } from "../components/layout/Navigation";
