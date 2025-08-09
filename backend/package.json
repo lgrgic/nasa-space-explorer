@@ -29,7 +29,8 @@
     "node-cache": "^5.1.2",
     "openai": "^5.11.0",
     "xss-clean": "^0.1.4",
-    "zod": "^4.0.14"
+    "zod": "^4.0.14",
+    "axios": "^1.11.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
