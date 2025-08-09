@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { asteroidsApi } from "../../services/asteroidsApi";
 import type { AsteroidsResponse, Asteroid } from "../../types/asteroids";
 import { DateFilterForm } from "../forms/DateFilterForm";
@@ -12,12 +13,9 @@ import { Pagination } from "../common/Pagination";
 import { CenteredDialog } from "../layout/CenteredDialog";
 import { AsteroidDetailCard } from "./AsteroidDetailCard";
 import { ApiErrorBoundary } from "../common/ApiErrorBoundary";
-import { useErrorHandler } from "../../hooks/useErrorHandler";
 // filters are applied on the server before pagination
 
 export const AsteroidsFeed = () => {
-  const [data, setData] = useState<AsteroidsResponse | null>(null);
-  const [loading, setLoading] = useState(false);
   const getTodayLocalString = (): string => {
     const now = new Date();
     const year = now.getFullYear();
@@ -49,45 +47,58 @@ export const AsteroidsFeed = () => {
     velocity: "all",
   });
 
-  const { hasError, error, retry, handleError } = useErrorHandler({
-    onRetry: () => fetchAsteroids(startDate, endDate, currentPage),
+  type FetchParams = {
+    startDate: string;
+    endDate: string;
+    page: number;
+    limit: number;
+    filters: AsteroidFiltersType;
+  };
+
+  const [fetchParams, setFetchParams] = useState<FetchParams>({
+    startDate,
+    endDate,
+    page: 1,
+    limit,
+    filters: appliedFilters,
   });
 
-  const fetchAsteroids = async (
-    start: string,
-    end: string,
-    page: number = 1,
-    filtersOverride?: AsteroidFiltersType
-  ) => {
-    try {
-      setLoading(true);
-      const response = await asteroidsApi.getFeed(
-        start,
-        end,
-        page,
-        limit,
-        filtersOverride ?? appliedFilters
-      );
-      setData(response);
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to load asteroids data");
-      handleError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const queryKey = ["asteroids-feed", fetchParams];
+
+  const {
+    data,
+    isLoading: loading,
+    isError,
+    error: queryError,
+  } = useQuery({
+    queryKey,
+    queryFn: () =>
+      asteroidsApi.getFeed(
+        fetchParams.startDate,
+        fetchParams.endDate,
+        fetchParams.page,
+        fetchParams.limit,
+        fetchParams.filters
+      ),
+    keepPreviousData: true,
+  });
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchAsteroids(startDate, endDate, 1);
+    setFetchParams({
+      startDate,
+      endDate,
+      page: 1,
+      limit,
+      filters: appliedFilters,
+    });
   };
 
   const handleNextPage = () => {
     if (data?.pagination?.hasNextPage) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
-      fetchAsteroids(startDate, endDate, nextPage);
+      setFetchParams({ ...fetchParams, page: nextPage });
     }
   };
 
@@ -95,7 +106,7 @@ export const AsteroidsFeed = () => {
     if (data?.pagination?.hasPrevPage) {
       const prevPage = currentPage - 1;
       setCurrentPage(prevPage);
-      fetchAsteroids(startDate, endDate, prevPage);
+      setFetchParams({ ...fetchParams, page: prevPage });
     }
   };
 
@@ -122,56 +133,34 @@ export const AsteroidsFeed = () => {
     setModalError(null);
   };
 
-  useEffect(() => {
-    fetchAsteroids(startDate, endDate, 1);
-  }, []);
+  // initial load handled by useQuery
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
     setAppliedFilters(uiFilters);
-    fetchAsteroids(startDate, endDate, 1, uiFilters);
+    setFetchParams({
+      startDate,
+      endDate,
+      page: 1,
+      limit,
+      filters: uiFilters,
+    });
   };
 
-  // Show skeleton
-  if (loading && !data) {
+  if (isError) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8 text-white font-mono tracking-wider">
           NEAR EARTH ASTEROIDS
         </h1>
 
-        <DateFilterForm
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          onSearch={handleSearch}
-          loading={loading}
-        />
-
-        <AsteroidsGrid
-          asteroids={[]}
-          loading={true}
-          onAsteroidClick={() => {}}
-        />
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8 text-white font-mono tracking-wider">
-          NEAR EARTH ASTEROIDS
-        </h1>
-
-        <ApiErrorBoundary onRetry={retry}>
+        <ApiErrorBoundary onRetry={() => setFetchParams({ ...fetchParams })}>
           <div className="text-center">
             <h2 className="text-2xl font-bold text-red-400 mb-4 font-mono">
               SYSTEM ERROR
             </h2>
             <p className="text-gray-400 font-mono">
-              {error?.message || "An unexpected error occurred"}
+              {(queryError as Error)?.message || "An unexpected error occurred"}
             </p>
           </div>
         </ApiErrorBoundary>
@@ -214,7 +203,7 @@ export const AsteroidsFeed = () => {
         disabled={loading}
       />
 
-      <div className="flex justify-end max-w-4xl mx-auto -mt-6 mb-6">
+      <div className="flex justify-end max-w-4xl mx-auto mt-2 mb-6">
         <button
           onClick={handleApplyFilters}
           disabled={loading}
@@ -228,23 +217,14 @@ export const AsteroidsFeed = () => {
         </button>
       </div>
 
-      {loading ? (
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 border border-gray-600 text-gray-300 px-4 py-2 rounded-lg bg-black/20 font-mono">
-            <div className="h-4 bg-gray-700/50 rounded animate-pulse w-48"></div>
-          </div>
-        </div>
-      ) : (
-        data &&
-        allAsteroids.length > 0 && (
-          <ResultsSummary
-            currentPageNumber={currentPageNumber}
-            totalPages={totalPages}
-            cumulativeCount={cumulativeCount}
-            totalAsteroids={totalAsteroids}
-            totalCount={allAsteroids.length}
-          />
-        )
+      {data && allAsteroids.length > 0 && (
+        <ResultsSummary
+          currentPageNumber={currentPageNumber}
+          totalPages={totalPages}
+          cumulativeCount={cumulativeCount}
+          totalAsteroids={totalAsteroids}
+          totalCount={allAsteroids.length}
+        />
       )}
 
       {allAsteroids.length === 0 && !loading && data ? (
@@ -288,11 +268,14 @@ export const AsteroidsFeed = () => {
           </div>
         </div>
       ) : (
-        <AsteroidsGrid
-          asteroids={allAsteroids}
-          loading={loading}
-          onAsteroidClick={handleAsteroidClick}
-        />
+        //fix flickering issue && !data
+        <div className="mt-4">
+          <AsteroidsGrid
+            asteroids={allAsteroids}
+            loading={loading && !data}
+            onAsteroidClick={handleAsteroidClick}
+          />
+        </div>
       )}
 
       <CenteredDialog
