@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { nasaService } from "../services/nasaService";
 import { aiAnalysisService } from "../services/aiAnalysisService";
 import { AsteroidFeedParams } from "../middleware/validation";
+import { scrubLinksMap, scrubNeoItem } from "../utils/sanitize";
 
 // set cache headers
 const setCacheHeaders = (res: Response, maxAge: number, etag: string) => {
@@ -40,7 +41,11 @@ export const nasaController = {
 
       const data = await nasaService.getAsteroidsFeed(start_date, end_date);
 
-      const allAsteroids: any[] = Object.values(data.near_earth_objects).flat();
+      const scrubbedLinks = scrubLinksMap(data.links as any);
+
+      const allAsteroids: any[] = Object.values(data.near_earth_objects)
+        .flat()
+        .map((neo: any) => scrubNeoItem(neo));
 
       const filtered = allAsteroids.filter((a: any) => {
         const approach = a.close_approach_data?.[0];
@@ -88,7 +93,8 @@ export const nasaController = {
       const paginatedAsteroids = filtered.slice(startIndex, endIndex);
 
       const result = {
-        ...data,
+        element_count: data.element_count,
+        links: scrubbedLinks,
         near_earth_objects: { [start_date]: paginatedAsteroids },
         pagination: {
           currentPage: page,
@@ -127,10 +133,13 @@ export const nasaController = {
 
       const data = await nasaService.getAsteroidById(asteroid_id);
 
+      // sanitize links
+      const sanitized = scrubNeoItem(data as any);
+
       // cache headers for browser caching
       setCacheHeaders(res, 86400, `"asteroid-${asteroid_id}"`);
 
-      res.json(data);
+      res.json(sanitized);
     } catch (error) {
       console.error("Asteroid lookup error:", error);
       res.status(500).json({
