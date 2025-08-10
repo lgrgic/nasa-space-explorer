@@ -16,14 +16,16 @@ cd backend && npm install
 cd frontend && npm install
 ```
 
-2. Env
+2. Environment
 
-- backend/.env
+- create backend/.env file and add following variables
 
 ```
 NASA_API_KEY=DEMO_KEY
 OPENAI_KEY=//optional_for_ai
 PORT=3001
+
+- for AI analysis OPENAI_KEY is needed. Let me know if you need one.
 ```
 
 ```
@@ -48,4 +50,5 @@ cd ../frontend && npm run dev
 - AI analysis (optional, requires OPENAI_KEY)
 - Caching (server + HTTP cache headers)
 - Security middleware (helmet, CORS, rate limit, XSS)
+- 3D earth in three.js - zoom in/out/rotate (webgl browser support needed)
 ```
