@@ -49,6 +49,7 @@ app.use(xssProtection);
 app.use(securityHeaders);
 
 app.use("/api/nasa", nasaRoutes);
+app.get("/api/health", (_req, res) => res.status(200).send("ok"));
 
 app.use(errorHandler);
 
