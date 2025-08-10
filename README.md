@@ -1,21 +1,51 @@
-### Install Dependencies
+## NASA Space Explorer
+
+React + Node/Express app that explores NASA NEO (asteroids) data with filters, charts, and an AI analysis.
+
+Live:
+
+- Frontend (Vercel): https://nasa-space-explorer-green.vercel.app/
+- Backend (Render): https://nasa-space-explorer-txd9.onrender.com
+
+### Local development
+
+1. Install
 
 ```
 cd backend && npm install
 cd frontend && npm install
 ```
 
-### Start Backend
+2. Env
+
+- backend/.env
 
 ```
+NASA_API_KEY=DEMO_KEY
+OPENAI_KEY=//optional_for_ai
+PORT=3001
+```
+
+```
+
+3. Run
+
+```
+
 cd backend && npm run dev
-```
-
-### Start Frontend
+cd ../frontend && npm run dev
 
 ```
-cd frontend && npm run dev
-```
 
-**Frontend**: http://localhost:3000
-**Backend**: http://localhost:3001
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
+
+### Features
+
+- Date range + additional filters (hazard, distance, size, velocity)
+- Pagination (server-side) with React Query on the client
+- Charts and timeline for close approaches
+- AI analysis (optional, requires OPENAI_KEY)
+- Caching (server + HTTP cache headers)
+- Security middleware (helmet, CORS, rate limit, XSS)
+```
