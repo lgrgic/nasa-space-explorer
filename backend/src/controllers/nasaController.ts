@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 import { nasaService } from "../services/nasaService";
 import { aiAnalysisService } from "../services/aiAnalysisService";
 import { AsteroidFeedParams } from "../middleware/validation";
-import { scrubLinksMap, scrubNeoItem } from "../utils/sanitize";
+import {
+  scrubLinksMap,
+  scrubNeoItem,
+  deepScrubApiKeys,
+} from "../utils/sanitize";
 
 // set cache headers
 const setCacheHeaders = (res: Response, maxAge: number, etag: string) => {
@@ -175,12 +179,15 @@ export const nasaController = {
       const asteroidData = await nasaService.getAsteroidById(asteroid_id);
       const analysis = await aiAnalysisService.analyzeAsteroid(asteroidData);
 
+      const sanitizedAsteroid = scrubNeoItem(asteroidData as any);
+      const sanitizedAnalysis = deepScrubApiKeys(analysis);
+
       // cache headers for browser caching
       setCacheHeaders(res, 1800, `"asteroid-analysis-${asteroid_id}"`);
 
       res.json({
-        asteroid: asteroidData,
-        analysis,
+        asteroid: sanitizedAsteroid,
+        analysis: sanitizedAnalysis,
       });
     } catch (error) {
       console.error("Asteroid analysis error:", error);
